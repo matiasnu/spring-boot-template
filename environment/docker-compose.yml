@@ -1,0 +1,21 @@
+version: '2.3'
+
+services:
+  app:
+    build:
+      context: .
+      dockerfile: app.dockerfile
+    restart: always
+
+  db:
+    build:
+      context: .
+      dockerfile: db.dockerfile # TODO reemplazar por las propias imagenes de la compañia
+    restart: always # Reinicia conteiners que fallan la salida
+    ports:
+      - 5433:5432
+    volumes:
+      - database-data:/var/lib/postgresql/data/
+
+volumes:
+  database-data:

@@ -1,0 +1,40 @@
+version: '2.3'
+
+services:
+  app:
+    image: demo/demo:building
+    restart: always
+    ports:
+      - "8080:8080"
+    depends_on:
+      db:
+        condition: service_healthy
+  db:
+    build:
+      context: .
+      dockerfile: db.dockerfile # TODO reemplazar por las propias imagenes de la compañia
+    restart: always
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready", "-q", "-d", "postgres", "-U", "postgres" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    ports:
+      - 5433:5432
+    volumes:
+      - database-data:/var/lib/postgresql/data/
+  zookeeper:
+    image: confluent/zookeeper
+    ports:
+      - "2181:2181"
+  kafka:
+    image: confluent/kafka
+    depends_on:
+      - zookeeper
+    ports:
+      - "9092:9092"
+    environment:
+      KAFKA_ZOOKEEPER_CONNECT: "zookeeper:2181"
+
+volumes:
+  database-data:
